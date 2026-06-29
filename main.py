@@ -6,6 +6,9 @@ from bs4 import BeautifulSoup
 import re
 import threading
 import time
+import mimetypes
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
 from fastapi import FastAPI, HTTPException, Header, Query
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
