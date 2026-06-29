@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AD Insight AI - 광고 AE를 위한 트렌드 & 서칭 분석기</title>
+    <!-- Google Fonts: Outfit & Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/style.css?v=2.3">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <i class="fa-solid fa-wand-magic-sparkles logo-icon"></i>
+                <div class="logo-text">
+                    <span class="logo-title">AD Insight</span>
+                    <span class="logo-subtitle">AI DASHBOARD</span>
+                </div>
+            </div>
+            <nav class="sidebar-menu">
+                <a href="#" class="menu-item active" data-target="page-dashboard">
+                    <i class="fa-solid fa-chart-line"></i><span>트렌드 대시보드</span>
+                </a>
+                <a href="#" class="menu-item" data-target="page-library">
+                    <i class="fa-solid fa-magnifying-glass"></i><span>광고 라이브러리</span>
+                </a>
+                <a href="#" class="menu-item" data-target="page-analyzer">
+                    <i class="fa-solid fa-gauge-high"></i><span>실시간 분석기</span>
+                </a>
+                <a href="#" class="menu-item" data-target="page-settings">
+                    <i class="fa-solid fa-gear"></i><span>설정 (Settings)</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="api-status" id="api-status-badge">
+                    <span class="status-dot offline"></span>
+                    <span class="status-text">API Key 미설정</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Top bar -->
+            <header class="topbar">
+                <div class="breadcrumb">
+                    <span class="text-muted">Home</span>
+                    <span class="divider">/</span>
+                    <span id="current-page-title">트렌드 대시보드</span>
+                </div>
+                <div class="topbar-actions" style="display: flex; align-items: center; gap: 20px;">
+                    <div class="notification-bell" id="btn-morning-briefing" title="오늘 아침의 AI 창의 광고 픽" style="position: relative; cursor: pointer; font-size: 20px; color: var(--text-muted); transition: color 0.3s;">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="notification-badge" id="morning-badge" style="display: none; position: absolute; top: -5px; right: -5px; background: var(--color-danger); color: white; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 2px solid var(--bg-card);">1</span>
+                    </div>
+                    <div class="user-profile">
+                        <span class="user-role">Junior AE</span>
+                        <div class="avatar">AE</div>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-wrapper">
+                <!-- Page 1: Dashboard -->
+                <section id="page-dashboard" class="page-section active">
+                    <div class="hero-banner">
+                        <div class="hero-text">
+                            <h1>시대의 흐름을 읽는 AE의 시작</h1>
+                            <p>광고 기획 의도와 타깃 반응, 소셜 바이럴 양상을 AI로 추적하고 인사이트를 확보하세요.</p>
+                        </div>
+                        <div class="hero-icon-wrapper">
+                            <i class="fa-solid fa-cube floating-cube"></i>
+                        </div>
+                    </div>
+
+                    <!-- Macro Trends Section -->
+                    <h2 class="section-title"><i class="fa-solid fa-fire text-gradient"></i> 현재 대세 광고 트렌드 키워드</h2>
+                    <div class="trends-grid">
+                        <div class="trend-card">
+                            <div class="trend-icon"><i class="fa-solid fa-robot"></i></div>
+                            <h3>AI 크리에이티브</h3>
+                            <p>AI 생성 이미지, 영상, 오디오를 전면에 배치하여 최신 기술 트렌드와 미래지향적 감각을 어필하는 트렌드.</p>
+                            <span class="trend-tag">Gen Z 타깃</span>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-icon"><i class="fa-solid fa-heart-pulse"></i></div>
+                            <h3>2030 현실 공감</h3>
+                            <p>과장된 연출 대신 실제 청년층의 결핍이나 직장/일상의 소소한 애환을 덤덤하게 풀어내어 강력한 유대를 만드는 전략.</p>
+                            <span class="trend-tag">공감 소구</span>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-icon"><i class="fa-solid fa-rotate-left"></i></div>
+                            <h3>레트로 노스탤지어</h3>
+                            <p>90년대~2000년대 Y2K 감성의 멜로디, 디자인, 연출을 차용하여 기성세대에겐 향수를, 신세대에겐 힙한 신선함을 선사.</p>
+                            <span class="trend-tag">바이럴 가능성 고</span>
+                        </div>
+                        <div class="trend-card">
+                            <div class="trend-icon"><i class="fa-solid fa-play"></i></div>
+                            <h3>숏폼 챌린지 지향</h3>
+                            <p>처음부터 9:16 비율 및 댄스, 숏컷 밈 요소를 고려하여 틱톡/릴스/쇼츠 바이럴을 유도하는 기획 스타일.</p>
+                            <span class="trend-tag">소셜 바이럴</span>
+                        </div>
+                    </div>
+
+                    <!-- Two Column Dashboard Body -->
+                    <div class="dashboard-two-col">
+                        <!-- Left Column: Ad History -->
+                        <div class="dashboard-left-col">
+                            <div class="dashboard-history">
+                                <div class="history-header">
+                                    <h2 class="section-title"><i class="fa-solid fa-clock-rotate-left"></i> 최근 분석된 광고</h2>
+                                    <button class="btn btn-secondary btn-sm" id="btn-view-all-library">라이브러리 전체 보기</button>
+                                </div>
+                                <div class="ads-grid" id="dashboard-analyzed-grid">
+                                    <!-- Dynamically loaded -->
+                                    <div class="empty-state">
+                                        <i class="fa-solid fa-database"></i>
+                                        <p>아직 분석된 광고가 없습니다. 아래 라이브러리나 실시간 분석기를 이용해 보세요.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column: Real-time Trends Side Panel -->
+                        <div class="dashboard-right-col">
+                            <!-- Nate Search Trends -->
+                            <div class="trend-panel-box">
+                                <h3 class="panel-title"><i class="fa-solid fa-bolt text-gradient"></i> 실시간 급상승 키워드</h3>
+                                <p class="panel-desc">사람들이 지금 관심 갖는 주제입니다. 클릭 시 즉시 광고를 검색합니다.</p>
+                                <div class="realtime-keywords-wrapper" id="realtime-keywords-list">
+                                    <!-- Loaded via JS -->
+                                    <span class="loading-small">트렌드 로드 중...</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Naver DataLab Trends -->
+                            <div class="trend-panel-box" style="margin-top: 24px;">
+                                <h3 class="panel-title"><i class="fa-solid fa-chart-line text-gradient"></i> 네이버 데이터랩 쇼핑 트렌드</h3>
+                                <p class="panel-desc">네이버 쇼핑 인기 검색 키워드입니다. 클릭 시 관련 광고를 즉시 검색합니다.</p>
+                                <div class="realtime-keywords-wrapper" id="naver-datalab-list">
+                                    <span class="loading-small">트렌드 로드 중...</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Careet MZ Trends -->
+                            <div class="trend-panel-box" style="margin-top: 24px;">
+                                <h3 class="panel-title"><i class="fa-solid fa-compass text-gradient"></i> MZ 세대 트렌드 피드 (Careet)</h3>
+                                <p class="panel-desc">요즘 소비층의 관심사와 최신 마케팅 밈 분석 레포트입니다.</p>
+                                <div class="careet-news-list" id="careet-news-list">
+                                    <!-- Loaded via JS -->
+                                    <span class="loading-small">피드 로드 중...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Page 2: Library -->
+                <section id="page-library" class="page-section">
+                    <!-- Media Format Category Selection Tabs -->
+                    <div class="library-category-tabs" style="margin-bottom: 24px;">
+                        <button class="category-tab active" data-category="">전체 매체</button>
+                        <button class="category-tab" data-category="영상"><i class="fa-solid fa-play"></i> 영상 광고</button>
+                        <button class="category-tab" data-category="옥외광고"><i class="fa-solid fa-store"></i> OOH / 옥외광고</button>
+                        <button class="category-tab" data-category="인쇄/잡지"><i class="fa-solid fa-file-invoice"></i> 인쇄 / 잡지</button>
+                        <button class="category-tab" data-category="소셜미디어"><i class="fa-solid fa-share-nodes"></i> 소셜 미디어</button>
+                        <button class="category-tab" data-category="디지털 캠페인"><i class="fa-solid fa-globe"></i> 디지털 캠페인</button>
+                    </div>
+
+                    <div class="filter-bar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="library-search-input" placeholder="광고 제목, 브랜드, 키워드 검색...">
+                        </div>
+                        <div class="filter-dropdowns">
+                            <!-- Brand Filter Dropdown -->
+                            <select id="filter-brand-select">
+                                <option value="">모든 브랜드</option>
+                                <!-- Dynamically loaded -->
+                            </select>
+                            <button class="btn btn-primary" id="btn-search-trigger">검색</button>
+                        </div>
+                    </div>
+
+                    <div class="ads-grid" id="library-ads-grid">
+                        <!-- Loaded via JS -->
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <button class="btn btn-secondary" id="btn-prev-page" disabled><i class="fa-solid fa-chevron-left"></i> 이전</button>
+                        <span id="page-indicator">1 / 1</span>
+                        <button class="btn btn-secondary" id="btn-next-page">다음 <i class="fa-solid fa-chevron-right"></i></button>
+                    </div>
+                </section>
+
+                <!-- Page 3: Analyzer -->
+                <section id="page-analyzer" class="page-section">
+                    <div class="analyzer-card">
+                        <h2><i class="fa-solid fa-wand-magic-sparkles text-gradient"></i> 실시간 광고 캠페인 분석기</h2>
+                        <p class="description">분석하고 싶은 광고 영상, 캠페인 플레이 페이지, 또는 관련 웹사이트 URL(유튜브, 인스타그램, 블로그 등)을 입력해 주세요. AI가 브랜드 정보와 스토리를 수집하고 기획 배경, 타깃 반응, 소셜 바이럴 양상을 즉시 모델링합니다.</p>
+                        
+                        <div class="input-group">
+                            <input type="text" id="analyzer-url-input" placeholder="예시: 유튜브, TVCF, 인스타그램, 블로그 등 분석할 광고/캠페인 링크">
+                            <button class="btn btn-glow" id="btn-analyze-start">실시간 분석 시작</button>
+                        </div>
+                        <div class="analyzer-tips">
+                            <h4><i class="fa-solid fa-lightbulb"></i> 분석 예시 추천</h4>
+                            <ul>
+                                <li><strong>여기어때:</strong> https://tvcf.co.kr/play/bi1892-1019389</li>
+                                <li><strong>하리보 골드베렌 야구팬:</strong> https://tvcf.co.kr/play/bi1779-1019477</li>
+                                <li><strong>YouTube 비디오 예시:</strong> https://www.youtube.com/watch?v=dQw4w9WgXcQ</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Loading Screen (Hidden by default) -->
+                    <div class="scanner-container" id="analyzer-loading" style="display: none;">
+                        <div class="scanner-beam"></div>
+                        <div class="scanner-text">
+                            <h3>AI 광고 분석 진행 중...</h3>
+                            <div class="loading-steps">
+                                <div class="step active" id="step-scrape"><i class="fa-solid fa-circle-notch fa-spin"></i> 광고 상세 데이터 크롤링 중...</div>
+                                <div class="step" id="step-ai"><i class="fa-regular fa-circle"></i> AI 기획 의도 및 트렌드 매핑 중...</div>
+                                <div class="step" id="step-chart"><i class="fa-regular fa-circle"></i> 소비자 반응 시뮬레이션 및 데이터 시각화 중...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Custom analysis report result will appear here -->
+                    <div id="analyzer-result-container" class="detail-report-wrapper" style="display: none; margin-top: 30px;">
+                        <!-- Embed detailed report inside page directly when analyzed -->
+                    </div>
+                </section>
+
+                <!-- Page 4: Settings -->
+                <section id="page-settings" class="page-section">
+                    <div class="settings-card">
+                        <h2><i class="fa-solid fa-key text-gradient"></i> Gemini API Key 설정</h2>
+                        <p class="description">이 서비스는 광고 상세 리포트를 기획 관점에서 실시간 분석하기 위해 Google Gemini API를 사용합니다. 입력하신 API 키는 브라우저 로컬 저장소(localStorage)에만 안전하게 저장되며 외부로 전송되지 않습니다.</p>
+                        
+                        <div class="form-group">
+                            <label for="settings-api-key">Gemini API Key</label>
+                            <div class="input-password-wrapper">
+                                <input type="password" id="settings-api-key" placeholder="AIzaSy...">
+                                <button class="btn btn-secondary btn-icon" id="btn-toggle-key-visibility"><i class="fa-solid fa-eye"></i></button>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="btn-save-settings">설정 저장</button>
+                            <button class="btn btn-secondary" id="btn-clear-settings">키 삭제</button>
+                        </div>
+                        
+                        <div class="help-section">
+                            <h3><i class="fa-solid fa-circle-question"></i> Gemini API Key 발급 방법</h3>
+                            <ol>
+                                <li><a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>에 접속하여 로그인합니다.</li>
+                                <li><strong>Get API key</strong> 버튼을 클릭합니다.</li>
+                                <li>새 프로젝트에서 API Key를 발급받아 복사한 뒤 위 입력창에 붙여넣기 하세요. (무료 한도로 충분히 테스트 가능합니다)</li>
+                            </ol>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Detail Report Modal -->
+    <div class="modal-overlay" id="detail-modal" style="display: none;">
+        <div class="modal-card">
+            <button class="modal-close-btn" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-body" id="detail-modal-body">
+                <!-- Loaded dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Morning Briefing Modal -->
+    <div class="modal-overlay" id="morning-briefing-modal" style="display: none;">
+        <div class="modal-card" style="max-width: 800px;">
+            <button class="modal-close-btn" id="btn-close-morning-modal" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: color 0.3s;"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-body" id="morning-briefing-modal-body">
+                <!-- Loaded dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- App JavaScript -->
+    <script src="/static/app.js?v=2.3"></script>
+</body>
+</html>
