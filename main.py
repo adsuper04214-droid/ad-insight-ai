@@ -140,6 +140,39 @@ def classify_media_category(url: str, title: str, media_name: str = "") -> str:
     # 5. Default to Video (영상)
     return "영상"
 
+def get_youtube_link(brand: str, title: str, fallback_url: str) -> str:
+    if "youtube.com" in fallback_url.lower() or "youtu.be" in fallback_url.lower():
+        return fallback_url
+        
+    query = f"{brand} {title} 광고".strip()
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7"
+    }
+    try:
+        import urllib.parse
+        encoded_query = urllib.parse.quote(query)
+        url = f"https://www.youtube.com/results?search_query={encoded_query}"
+        res = requests.get(url, headers=headers, timeout=5)
+        if res.status_code == 200:
+            html = res.text
+            video_ids = re.findall(r'"videoId"\s*:\s*"([^"]+)"', html)
+            if video_ids:
+                unique_ids = []
+                for vid in video_ids:
+                    if vid not in unique_ids and len(vid) == 11:
+                        unique_ids.append(vid)
+                if unique_ids:
+                    return f"https://www.youtube.com/watch?v={unique_ids[0]}"
+            
+            watch_matches = re.findall(r'/watch\?v=([a-zA-Z0-9_-]{11})', html)
+            if watch_matches:
+                return f"https://www.youtube.com/watch?v={watch_matches[0]}"
+    except Exception as e:
+        print(f"Error searching YouTube for {query}: {e}")
+        
+    return fallback_url
+
 def load_all_ads():
     global ALL_ADS, AGENCY_ADS
     ALL_ADS = []
@@ -772,7 +805,8 @@ def analyze_ad_with_gemini(ad_info: dict, api_key: str) -> dict:
         
         result = json.loads(response.text.strip())
         result["image"] = ad_info["image"]
-        result["url"] = ad_info["url"]
+        yt_url = get_youtube_link(ad_info["brand"], ad_info["title"], ad_info["url"])
+        result["url"] = yt_url
         result["id"] = ad_info["id"]
         result["source"] = ad_info.get("source", "TVCF")
         if "client" not in result:
@@ -784,6 +818,7 @@ def analyze_ad_with_gemini(ad_info: dict, api_key: str) -> dict:
         return result
     except Exception as e:
         print(f"Gemini API Error: {e}")
+        yt_url = get_youtube_link(ad_info["brand"], ad_info["title"], ad_info["url"])
         return {
             "id": ad_info["id"],
             "title": ad_info["title"],
@@ -792,7 +827,7 @@ def analyze_ad_with_gemini(ad_info: dict, api_key: str) -> dict:
             "agency": ad_info.get("source", "TVCF"),
             "onair_date": ad_info.get("date", "정보 없음"),
             "image": ad_info["image"],
-            "url": ad_info["url"],
+            "url": yt_url,
             "source": ad_info.get("source", "TVCF"),
             "intent": {
                 "background": "Gemini API 분석 실패. API Key와 네트워크 상태를 검토하세요.",
@@ -901,6 +936,13 @@ def analyze_ad(request: AnalysisRequest, x_gemini_api_key: Optional[str] = Heade
             cached_data = cache[request.ad_id]
             is_failed = cached_data.get("target_perception", {}).get("before") == "N/A" or "실패" in cached_data.get("intent", {}).get("background", "")
             if not is_failed:
+                old_url = cached_data.get("url", "")
+                if old_url and "tvcf.co.kr" in old_url.lower():
+                    new_url = get_youtube_link(cached_data.get("brand", ""), cached_data.get("title", ""), old_url)
+                    if new_url != old_url:
+                        cached_data["url"] = new_url
+                        cache[request.ad_id] = cached_data
+                        save_cache(cache)
                 print(f"Returning cached analysis for {request.ad_id}")
                 return cached_data
             
@@ -919,6 +961,13 @@ def analyze_ad(request: AnalysisRequest, x_gemini_api_key: Optional[str] = Heade
         if "target_perception" in cached_data:
             is_failed = cached_data.get("target_perception", {}).get("before") == "N/A" or "실패" in cached_data.get("intent", {}).get("background", "")
             if not is_failed:
+                old_url = cached_data.get("url", "")
+                if old_url and "tvcf.co.kr" in old_url.lower():
+                    new_url = get_youtube_link(cached_data.get("brand", ""), cached_data.get("title", ""), old_url)
+                    if new_url != old_url:
+                        cached_data["url"] = new_url
+                        cache[request.ad_id] = cached_data
+                        save_cache(cache)
                 print(f"Returning cached analysis for {request.ad_id}")
                 return cached_data
             
