@@ -719,7 +719,9 @@ PROMPT_TEMPLATE = """
 [JSON Schema]
 {{
   "title": "광고 제목",
-  "brand": "브랜드명/광고주",
+  "client": "광고주/클라이언트 회사명 (예: 매일유업, 삼성전자, 영원아웃도어)",
+  "brand": "구체적인 캠페인 브랜드명 (예: 소화가 잘되는 우유, 갤럭시 S26, 노스페이스 맥머도)",
+  "agency": "제작/대행 대행사 이름 (예: 제일기획, 이노션, HS애드, 이노레드 등 실제 대행사 이름)",
   "onair_date": "집행/온에어 일자 (예: YYYY-MM-DD)",
   "intent": {{
     "background": "캠페인 기획 배경 및 시대적 트렌드 (왜 이 시점에 이 광고/체험형 팝업이 나와야만 했는지 시장 상황, 경쟁사 동향, 사회적 흐름 등을 포함하여 매우 상세하게 분석)",
@@ -773,13 +775,21 @@ def analyze_ad_with_gemini(ad_info: dict, api_key: str) -> dict:
         result["url"] = ad_info["url"]
         result["id"] = ad_info["id"]
         result["source"] = ad_info.get("source", "TVCF")
+        if "client" not in result:
+            result["client"] = ad_info.get("client") or ad_info["brand"]
+        if "brand" not in result:
+            result["brand"] = ad_info["brand"]
+        if "agency" not in result:
+            result["agency"] = ad_info.get("source") or ad_info.get("agency") or "TVCF"
         return result
     except Exception as e:
         print(f"Gemini API Error: {e}")
         return {
             "id": ad_info["id"],
             "title": ad_info["title"],
+            "client": ad_info.get("client") or ad_info["brand"],
             "brand": ad_info["brand"],
+            "agency": ad_info.get("source", "TVCF"),
             "onair_date": ad_info.get("date", "정보 없음"),
             "image": ad_info["image"],
             "url": ad_info["url"],
@@ -838,13 +848,15 @@ def get_ads(
     paginated = filtered_ads[start:end]
     
     brands = sorted(list(set(ad["brand"] for ad in ALL_ADS)))
+    sources = sorted(list(set(ad["source"] for ad in ALL_ADS if ad.get("source"))))
     
     return {
         "total": len(filtered_ads),
         "page": page,
         "limit": limit,
         "ads": paginated,
-        "brands": brands[:40]
+        "brands": brands[:40],
+        "sources": sources
     }
 
 class AnalysisRequest(BaseModel):
