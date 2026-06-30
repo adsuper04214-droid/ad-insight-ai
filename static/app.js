@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const libraryAdsGrid = document.getElementById("library-ads-grid");
     const librarySearchInput = document.getElementById("library-search-input");
     const filterBrandSelect = document.getElementById("filter-brand-select");
+    const filterAgencySelect = document.getElementById("filter-agency-select");
     const btnSearchTrigger = document.getElementById("btn-search-trigger");
     const btnPrevPage = document.getElementById("btn-prev-page");
     const btnNextPage = document.getElementById("btn-next-page");
@@ -81,6 +82,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const detailModal = document.getElementById("detail-modal");
     const detailModalBody = document.getElementById("detail-modal-body");
     const btnCloseModal = document.getElementById("btn-close-modal");
+
+    // Trend Modal elements
+    const trendModal = document.getElementById("trend-modal");
+    const trendModalBody = document.getElementById("trend-modal-body");
+    const btnCloseTrendModal = document.getElementById("btn-close-trend-modal");
 
     // --- Initial Setup ---
     updateApiStatusUI();
@@ -274,6 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
         btnSearchTrigger.addEventListener("click", () => {
             if (librarySearchInput) state.library.query = librarySearchInput.value.trim();
             if (filterBrandSelect) state.library.brand = filterBrandSelect.value;
+            if (filterAgencySelect) state.library.source = filterAgencySelect.value;
             state.library.page = 1;
             loadLibraryData();
         });
@@ -289,6 +296,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (filterBrandSelect) {
         filterBrandSelect.addEventListener("change", () => {
+            if (btnSearchTrigger) btnSearchTrigger.click();
+        });
+    }
+
+    if (filterAgencySelect) {
+        filterAgencySelect.addEventListener("change", () => {
             if (btnSearchTrigger) btnSearchTrigger.click();
         });
     }
@@ -337,6 +350,21 @@ document.addEventListener("DOMContentLoaded", () => {
         detailModal.addEventListener("click", (e) => {
             if (e.target === detailModal && btnCloseModal) {
                 btnCloseModal.click();
+            }
+        });
+    }
+
+    if (btnCloseTrendModal) {
+        btnCloseTrendModal.addEventListener("click", () => {
+            if (trendModal) trendModal.style.display = "none";
+            document.body.style.overflow = "auto";
+        });
+    }
+
+    if (trendModal) {
+        trendModal.addEventListener("click", (e) => {
+            if (e.target === trendModal && btnCloseTrendModal) {
+                btnCloseTrendModal.click();
             }
         });
     }
@@ -392,9 +420,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         `;
                         
                         item.addEventListener("click", () => {
-                            switchPage("page-library");
-                            if (librarySearchInput) librarySearchInput.value = kw;
-                            if (btnSearchTrigger) btnSearchTrigger.click();
+                            requestTrendAnalysis(kw);
                         });
                         
                         realtimeKeywordsList.appendChild(item);
@@ -475,9 +501,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         `;
                         
                         item.addEventListener("click", () => {
-                            switchPage("page-library");
-                            if (librarySearchInput) librarySearchInput.value = kw;
-                            if (btnSearchTrigger) btnSearchTrigger.click();
+                            requestTrendAnalysis(kw);
                         });
                         
                         naverDatalabList.appendChild(item);
@@ -545,6 +569,15 @@ document.addEventListener("DOMContentLoaded", () => {
                     opt.value = br;
                     opt.textContent = br;
                     filterBrandSelect.appendChild(opt);
+                });
+            }
+
+            if (filterAgencySelect && filterAgencySelect.children.length <= 1 && data.sources) {
+                data.sources.forEach(src => {
+                    const opt = document.createElement("option");
+                    opt.value = src;
+                    opt.textContent = src;
+                    filterAgencySelect.appendChild(opt);
                 });
             }
 
@@ -864,10 +897,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     <img src="${thumbUrl}" alt="${data.title || '광고'}" onerror="this.src='${fallbackThumb}'">
                 </div>
                 <div class="report-title-info">
-                    <span class="report-brand">${data.brand || '브랜드'} [${sourceName}]</span>
+                    <span class="report-brand"><i class="fa-solid fa-circle-nodes text-gradient"></i> AI 기획 AE 캠페인 리포트</span>
                     <h2 class="report-title">${data.title || '제목 없음'}</h2>
                     <div class="report-meta-tags">
-                        <span class="meta-tag"><i class="fa-solid fa-calendar"></i> ${data.onair_date || '정보없음'}</span>
+                        <span class="meta-tag"><i class="fa-solid fa-building"></i> 광고주: ${data.client || data.brand || '정보없음'}</span>
+                        <span class="meta-tag"><i class="fa-solid fa-tag"></i> 브랜드: ${data.brand || '정보없음'}</span>
+                        <span class="meta-tag"><i class="fa-solid fa-briefcase"></i> 대행사: ${data.agency || sourceName}</span>
+                        <span class="meta-tag"><i class="fa-solid fa-calendar"></i> 온에어: ${data.onair_date || '정보없음'}</span>
                         <span class="meta-tag"><i class="fa-solid fa-bullseye"></i> 매칭 스코어: ${matchScore}%</span>
                     </div>
                 </div>
@@ -1183,5 +1219,134 @@ document.addEventListener("DOMContentLoaded", () => {
                 btnCloseMorningModal.click();
             }
         });
+    }
+
+    // --- Trend Analysis Interactions ---
+    async function requestTrendAnalysis(keyword) {
+        if (trendModalBody) {
+            trendModalBody.innerHTML = `
+                <div class="scanner-container" style="background: none; border: none; padding: 40px 20px;">
+                    <div class="scanner-beam"></div>
+                    <div class="scanner-text">
+                        <h3>AI 트렌드 심층 분석 중...</h3>
+                        <p style="color: var(--text-muted); font-size:14px; margin-top:8px;">'${keyword}' 키워드의 급상승 배경 및 사회 흐름을 추적하고 있습니다.</p>
+                    </div>
+                </div>
+            `;
+        }
+        if (trendModal) {
+            trendModal.style.display = "flex";
+        }
+        document.body.style.overflow = "hidden";
+
+        try {
+            const res = await fetch(`/api/trends/analyze?keyword=${encodeURIComponent(keyword)}`, {
+                headers: {
+                    "X-Gemini-API-Key": state.apiKey || ""
+                }
+            });
+            if (!res.ok) {
+                throw new Error("트렌드 분석을 가져오는 도중 장애가 일어났습니다.");
+            }
+            const trendData = await res.json();
+            renderTrendReport(trendData, trendModalBody);
+        } catch (err) {
+            console.error("Trend analysis error:", err);
+            if (trendModalBody) {
+                trendModalBody.innerHTML = `
+                    <div style="padding: 40px 20px; text-align: center;">
+                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 40px; color: var(--color-danger); margin-bottom: 15px;"></i>
+                        <h3 style="margin-bottom:8px;">분석 중 오류 발생</h3>
+                        <p style="color: var(--text-muted); margin-bottom: 20px; font-size:13.5px;">${err.message}</p>
+                        <button class="btn btn-secondary" onclick="document.getElementById('trend-modal').style.display='none'; document.body.style.overflow='auto';">닫기</button>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    function renderTrendReport(data, container) {
+        if (!data || !container) return;
+        
+        const getSafeHtmlText = (val) => {
+            if (val === undefined || val === null) return "정보 없음";
+            return String(val).replace(/\n/g, '<br>');
+        };
+
+        // Render reference links dynamically
+        let refHtml = "";
+        if (data.references && data.references.length > 0) {
+            data.references.forEach(ref => {
+                refHtml += `
+                    <a href="${ref.url}" target="_blank" class="meta-tag" style="display: inline-flex; align-items: center; gap: 6px; text-decoration: none; padding: 8px 12px; margin: 4px; font-weight: 500; font-size: 12.5px; color: var(--color-secondary); background: rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.15); border-radius: 8px; transition: all 0.2s;">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> ${ref.title}
+                    </a>
+                `;
+            });
+        } else {
+            refHtml = "<p style='color: var(--text-muted); font-size: 13.5px;'>추천 출처 정보가 없습니다.</p>";
+        }
+
+        container.innerHTML = `
+            <div class="report-title-info" style="margin-bottom: 25px; text-align:left;">
+                <span class="report-brand" style="margin-bottom: 8px; display:inline-block;"><i class="fa-solid fa-fire text-gradient"></i> 요즘 급상승 트렌드 분석 리포트</span>
+                <h2 class="report-title" style="font-size: 28px; font-weight: 800; color: var(--text-main); margin: 0 0 12px 0;"># ${data.keyword}</h2>
+                <p style="font-size: 14.5px; color: var(--color-secondary); line-height: 1.6; background: rgba(6, 182, 212, 0.03); border-left: 3px solid var(--color-secondary); padding: 12px 16px; border-radius: 4px 8px 8px 4px; margin:0;">
+                    <strong>요약:</strong> ${getSafeHtmlText(data.summary)}
+                </p>
+             </div>
+
+             <div class="info-block" style="margin-bottom: 25px; border-left: 4px solid var(--color-primary); background: rgba(139, 92, 246, 0.02); text-align:left;">
+                 <h4 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+                     <i class="fa-solid fa-magnifying-glass-chart" style="color: var(--color-primary);"></i> 사람들이 왜 열광하고 있나요? (급상승 사회 흐름 분석)
+                 </h4>
+                 <div style="font-size: 14px; color: var(--text-muted); line-height: 1.7; word-break: break-all;">
+                     ${getSafeHtmlText(data.reason)}
+                 </div>
+             </div>
+
+             <div class="info-block" style="margin-bottom: 30px; border-left: 4px solid var(--color-success); background: rgba(16, 185, 129, 0.02); text-align:left;">
+                 <h4 style="font-size: 15px; font-weight: 700; color: var(--text-main); margin: 0 0 12px 0; display: flex; align-items: center; gap: 8px;">
+                     <i class="fa-solid fa-link" style="color: var(--color-success);"></i> 트렌드 실시간 검색 및 출처 자료
+                 </h4>
+                 <div style="display: flex; flex-wrap: wrap; margin: -4px;">
+                     ${refHtml}
+                 </div>
+             </div>
+
+             <div class="trend-action-footer" style="display: flex; gap: 12px; margin-top: 25px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 20px;">
+                 <button class="btn btn-primary" id="btn-trend-search-ads" style="flex: 1; display: flex; justify-content: center; align-items: center; gap: 8px; height: 46px; font-weight: 600;">
+                     <i class="fa-solid fa-magnifying-glass"></i> 이 키워드 관련 광고 찾기
+                 </button>
+                 <button class="btn btn-secondary" id="btn-trend-modal-close" style="width: 100px; height: 46px;">
+                     닫기
+                 </button>
+             </div>
+        `;
+
+        const btnTrendSearch = document.getElementById("btn-trend-search-ads");
+        const btnTrendClose = document.getElementById("btn-trend-modal-close");
+
+        if (btnTrendSearch) {
+            btnTrendSearch.addEventListener("click", () => {
+                const modal = document.getElementById("trend-modal");
+                if (modal) modal.style.display = "none";
+                document.body.style.overflow = "";
+
+                switchPage("page-library");
+                const librarySearchInput = document.getElementById("library-search-input");
+                const btnSearchTrigger = document.getElementById("btn-search-trigger");
+                if (librarySearchInput) librarySearchInput.value = data.keyword;
+                if (btnSearchTrigger) btnSearchTrigger.click();
+            });
+        }
+
+        if (btnTrendClose) {
+            btnTrendClose.addEventListener("click", () => {
+                const modal = document.getElementById("trend-modal");
+                if (modal) modal.style.display = "none";
+                document.body.style.overflow = "";
+            });
+        }
     }
 });

@@ -786,6 +786,34 @@ PROMPT_TEMPLATE = """
 }}
 """
 
+TREND_PROMPT_TEMPLATE = """
+당신은 트렌드에 극도로 민감한 마케팅 애널리스트이자 광고 기획자(AE)입니다.
+최근 급상승하고 있는 트렌드 키워드인 '{keyword}'에 대해 현대 사회 흐름과 대중 심리를 꿰뚫는 정교한 트렌드 분석 리포트를 작성해 주세요.
+
+[요구사항]
+1. 사람들이 왜 이 키워드/현상에 열광하고 있는지, 최근에 왜 급상승하게 되었는지 사회적 배경(Social context), 경제적 요인, 대중 심리(Consumer psychology)를 AE 실무자 수준으로 상세하고 통찰력 있게 서술하십시오.
+2. 출력 형식은 반드시 아래 JSON 스키마를 정확히 따르는 유효한 JSON 객체여야 합니다. JSON 외의 다른 설명 텍스트나 ```json 코드블럭 마크다운 태그를 포함하지 마십시오. 오직 순수한 JSON 문자열만 리턴해 주세요.
+3. 한국어(Korean)로 작성해 주세요.
+
+[JSON Schema]
+{{
+  "keyword": "분석한 키워드명",
+  "summary": "트렌드 한줄 요약 및 정의 (1-2문장의 명확한 정의)",
+  "reason": "대중이 열광하는 이유와 급상승 사회적 배경 상세 서술 (최소 3개 이상의 구체적인 요인을 소제목과 함께 매우 깊이 있게 작성)",
+  "references": [
+    {{
+      "title": "관련 트렌드 이해를 돕는 대표 뉴스/보고서 또는 관련 기관/서비스 추천 검색어 1",
+      "url": "해당 정보를 쉽게 찾을 수 있는 유튜브 또는 구글 검색 링크"
+    }},
+    {{
+      "title": "대표 뉴스/보고서 또는 추천 검색어 2",
+      "url": "..."
+    }}
+  ]
+}}
+"""
+
+
 def analyze_ad_with_gemini(ad_info: dict, api_key: str) -> dict:
     
     prompt = PROMPT_TEMPLATE.format(
@@ -1169,6 +1197,64 @@ def scrape_naver_datalab() -> List[str]:
 def get_naver_datalab_trends():
     trends = scrape_naver_datalab()
     return {"status": "success", "trends": trends}
+
+@app.get("/api/trends/analyze")
+def get_trend_analysis(keyword: str, x_gemini_api_key: Optional[str] = Header(None)):
+    api_key = x_gemini_api_key
+    if not api_key or api_key.strip() == "":
+        api_key = get_server_api_key()
+        
+    import urllib.parse
+    encoded_kw = urllib.parse.quote(keyword)
+    
+    if not api_key or api_key.strip() == "":
+        return {
+            "keyword": keyword,
+            "summary": f"최근 화두가 되고 있는 '{keyword}' 관련 트렌드입니다.",
+            "reason": f"'{keyword}'에 대한 대중의 관심이 다양한 소셜 미디어 및 검색 포털에서 급상승하고 있습니다. (설정 페이지에서 본인의 Gemini API Key를 등록하시면 해당 키워드가 왜 뜨고 있고 대중이 왜 열광하는지에 대한 상세한 배경과 심리 분석 리포트가 생성됩니다.)",
+            "references": [
+                {"title": f"네이버 '{keyword}' 트렌드 검색", "url": f"https://search.naver.com/search.naver?query={encoded_kw}+트렌드"},
+                {"title": f"유튜브 '{keyword}' 이슈 분석", "url": f"https://www.youtube.com/results?search_query={encoded_kw}+트렌드"},
+                {"title": f"구글 '{keyword}' 뉴스 트렌드", "url": f"https://www.google.com/search?q={encoded_kw}+트렌드"}
+            ]
+        }
+        
+    try:
+        client = genai.Client(api_key=api_key, http_options=types.HttpOptions(api_version='v1beta'))
+        config = types.GenerateContentConfig(response_mime_type='application/json')
+        prompt = TREND_PROMPT_TEMPLATE.format(keyword=keyword)
+        
+        response = generate_content_with_retry(client, 'gemini-3.5-flash', prompt, config)
+        result = json.loads(response.text.strip())
+        
+        search_refs = [
+            {"title": f"네이버 '{keyword}' 트렌드 검색", "url": f"https://search.naver.com/search.naver?query={encoded_kw}+트렌드"},
+            {"title": f"유튜브 '{keyword}' 이슈 분석", "url": f"https://www.youtube.com/results?search_query={encoded_kw}+트렌드"},
+            {"title": f"구글 '{keyword}' 뉴스 트렌드", "url": f"https://www.google.com/search?q={encoded_kw}+트렌드"}
+        ]
+        
+        existing_refs = result.get("references", [])
+        for ref in existing_refs:
+            ref_url = ref.get("url", "")
+            if not ref_url.startswith("http") or "example.com" in ref_url or "..." in ref_url:
+                ref["url"] = f"https://www.google.com/search?q={urllib.parse.quote(ref.get('title', keyword))}"
+            search_refs.append(ref)
+            
+        result["references"] = search_refs
+        return result
+    except Exception as e:
+        print(f"Error analyzing trend '{keyword}': {e}")
+        return {
+            "keyword": keyword,
+            "summary": f"최근 화두가 되고 있는 '{keyword}' 관련 트렌드입니다.",
+            "reason": f"대중의 소비 트렌드 및 시사 흐름에서 '{keyword}' 관련 언급량이 크게 급증하였습니다. 상세 분석 과정에서 오류가 발생했습니다: {e}",
+            "references": [
+                {"title": f"네이버 '{keyword}' 트렌드 검색", "url": f"https://search.naver.com/search.naver?query={encoded_kw}+트렌드"},
+                {"title": f"유튜브 '{keyword}' 이슈 분석", "url": f"https://www.youtube.com/results?search_query={encoded_kw}+트렌드"},
+                {"title": f"구글 '{keyword}' 뉴스 트렌드", "url": f"https://www.google.com/search?q={encoded_kw}+트렌드"}
+            ]
+        }
+
 
 @app.get("/api/trends/morning-briefing")
 def get_morning_briefing():

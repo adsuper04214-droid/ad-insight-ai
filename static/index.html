@@ -186,6 +186,11 @@
                                 <option value="">모든 브랜드</option>
                                 <!-- Dynamically loaded -->
                             </select>
+                            <!-- Agency Filter Dropdown -->
+                            <select id="filter-agency-select">
+                                <option value="">모든 대행사</option>
+                                <!-- Dynamically loaded -->
+                            </select>
                             <button class="btn btn-primary" id="btn-search-trigger">검색</button>
                         </div>
                     </div>
@@ -288,6 +293,16 @@
         <div class="modal-card" style="max-width: 800px;">
             <button class="modal-close-btn" id="btn-close-morning-modal" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: color 0.3s;"><i class="fa-solid fa-xmark"></i></button>
             <div class="modal-body" id="morning-briefing-modal-body">
+                <!-- Loaded dynamically via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Trend Detail Modal -->
+    <div class="modal-overlay" id="trend-modal" style="display: none;">
+        <div class="modal-card" style="max-width: 650px;">
+            <button class="modal-close-btn" id="btn-close-trend-modal" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer; transition: color 0.3s;"><i class="fa-solid fa-xmark"></i></button>
+            <div class="modal-body" id="trend-modal-body">
                 <!-- Loaded dynamically via JS -->
             </div>
         </div>
